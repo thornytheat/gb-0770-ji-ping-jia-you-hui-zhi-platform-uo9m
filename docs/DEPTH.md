@@ -12,7 +12,8 @@
 | M4 密度换算与误差带 | 复算油温订正和容差 | `GET/POST /api/mass` | `app/conversion/standard.py` `app/conversion/calculate.py` | `tests/test_mass.py` |
 | M5 库存和签单对账 | 核对罐车与逐票签收差额 | `GET/POST /api/balance` | `app/settlement/inventory.py` `app/settlement/receipts.py` `app/settlement/report.py` | `tests/test_settlement.py` |
 | M6 批次留档复跑 | 保存清单与各阶段快照 | `POST /api/shifts` | `app/ledger/replay.py` `app/ledger/sqlite_book.py` | `tests/test_replay.py` |
-| M7 加注证据签发 | 固定签发证据并复验摘要 | `POST /api/shifts/{batch}/sign` | `app/dispatch/signatures.py` `app/dispatch/document.py` | `tests/test_dispatch.py` |
+| M7 加注证据签发 | 固定签发证据并复验摘要 | `POST /api/shifts/{batch}/sign`、`GET /api/shifts/{batch}/export` | `app/dispatch/signatures.py` `app/dispatch/document.py` | `tests/test_dispatch.py` |
+| M8 航司归属与分册出证 | 按航司单独取凭证，归属不明留待核 | `GET /api/shifts/{batch}/airlines`、`POST .../sign` 带 `airline` | `app/settlement/attribution.py` `app/intake/evidence.py` `app/dispatch/document.py` | `tests/test_attribution.py` |
 
 ## 陷阱登记
 
@@ -27,5 +28,10 @@
 | TRAP-15 | 密度混用 | 吨位严重误算 | 归一单位并做油种范围校验 | `app/conversion/standard.py` | `tests/test_mass.py::test_density_units_normalized` |
 | TRAP-23 | 票据正好位于切换点 | 重叠版本被算两次 | 左闭右开，扫描票内切点 | `app/meters/select.py` | `tests/test_versions.py::test_expiry_is_right_open` |
 | TRAP-25 | 多版本同时生效 | 配置文件顺序决定 | 高修订胜出，并列挂起 | `app/meters/select.py` | `tests/test_versions.py::test_overlap_higher_version_selected` |
+| TRAP-31 | 整班证据含别家航司票 | 整单外发泄露别家数据 | 按航司出分册，只装本航司原件 | `app/settlement/attribution.py` `app/dispatch/document.py` | `tests/test_attribution.py::test_airline_slip_contains_only_that_airline` |
+| TRAP-32 | 裁过的单子沿用整班摘要 | 分离后无法复验 | 分册自带摘要，独立摘要校验 | `app/dispatch/document.py` `app/dispatch/signatures.py` | `tests/test_attribution.py::test_each_airline_slip_reverifies_on_its_own` |
+| TRAP-33 | 同票航司不一致 | 按后写归属把票划给别人 | 归属冲突留待核，不进入任何分册 | `app/settlement/attribution.py` | `tests/test_attribution.py::test_missing_or_conflicting_ownership_is_held_for_review` |
+| TRAP-34 | 归属列缺失的重复行 | 误判数值冲突整组隔离 | 归属不参与原件比对 | `app/intake/evidence.py` | `tests/test_attribution.py::test_ownership_conflict_is_not_a_value_conflict` |
+| TRAP-35 | 重试签发同一凭证 | 每次新增签发记录 | 以批次与范围为主键幂等 | `app/ledger/sqlite_book.py` `app/dispatch/signatures.py` | `tests/test_attribution.py::test_repeat_signing_never_adds_a_record` |
 
-样例包含 40 原件、35 采信、4 隔离和 1 重复。两辆库存可核车辆的 510000 g 等于 247600 g 发放、261000 g 期末与 1400 g 差额。另有 FT-23 的 16000 g 已核计量，库存缺期末锚点。
+样例包含 40 原件、35 采信、4 隔离和 1 重复。两辆库存可核车辆的 510000 g 等于 247600 g 发放、261000 g 期末与 1400 g 差额。另有 FT-23 的 16000 g 已核计量，库存缺期末锚点。多航司样例 `carrier-*` 在夜班三联单上加航司列：T07 票面与回执归属不一致、T09 两处都缺航司，二者留待核；MU 分册 11 票，CA 分册 4 票。

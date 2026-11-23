@@ -9,6 +9,8 @@ REASONS = {
     'TEMPERATURE':'油温超出模型范围', 'FUEL':'未配置该油种', 'NO_RECEIPT':'缺少签收回执',
     'SIGN_TRUCK':'计量票与回执车号不一致', 'NO_METER':'签收缺少可计发放票', 'SIGN_DIFF':'签收差超过允许误差',
     'STOCK_ANCHORS':'缺少唯一的期初或期末库存', 'NO_BATCH':'没有此交班归档', 'NOT_SIGNED':'证据单尚未签发',
+    'AIRLINE_MISSING':'票据缺少航司归属', 'AIRLINE_CONFLICT':'票据与回执的航司归属不一致',
+    'AIRLINE':'该航司在本批次没有可出证票据',
 }
 
 

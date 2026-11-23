@@ -30,15 +30,36 @@ bind('#archive', async form => {
 });
 
 const pick = document.querySelector('#batch');
+const carrier = document.querySelector('#carrier');
 const hash = document.querySelector('#checksum');
 const exportLink = document.querySelector('#export-slip');
-pick?.addEventListener('change', () => { hash.value = ''; exportLink.hidden = true; });
+
+function resetResult() {
+  hash.value = '';
+  exportLink.hidden = true;
+}
+
+// 航司分册只对应归档它的批次：换批次时丢弃不属于该批次的航司选择。
+function syncCarrier() {
+  const option = carrier?.selectedOptions[0];
+  if (option?.value && option.dataset.batch !== pick?.value) carrier.value = '';
+}
+
+pick?.addEventListener('change', () => { syncCarrier(); resetResult(); });
+carrier?.addEventListener('change', () => {
+  if (carrier.value) pick.value = carrier.selectedOptions[0].dataset.batch;
+  resetResult();
+});
+
 bind('#signature', async () => {
   const batch = pick.value;
-  const result = await post(`/api/shifts/${batch}/sign`,{});
+  const airline = carrier?.value || '';
+  const result = await post(`/api/shifts/${batch}/sign`, airline ? {airline} : {});
   if (pick.value !== batch) return;
   hash.value = result.checksum;
-  exportLink.href = `/api/shifts/${batch}/export`;
+  const scope = result.scope === 'airline' ? `?airline=${encodeURIComponent(result.airline)}` : '';
+  exportLink.href = `/api/shifts/${batch}/export${scope}`;
   exportLink.hidden = false;
-  status.textContent = `证据已签发 · 待复核 ${result.open_items} 票`;
+  const label = result.scope === 'airline' ? `${result.airline} 航司分册` : '整班证据单';
+  status.textContent = `${label}已签发 · 待复核 ${result.open_items} 票 · 归属留待核 ${result.held_for_review} 票`;
 });

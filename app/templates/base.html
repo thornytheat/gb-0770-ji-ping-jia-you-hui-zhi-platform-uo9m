@@ -5,7 +5,7 @@
 <nav class="operations" aria-label="油务工序"><a class="unit" href="/"><span aria-hidden="true">▥</span> 机坪油务</a>
 {% for key,label in tabs.items() %}<a href="{{ url_for('ramp.view',tab=key,sample=sample) }}" {% if key==section %}aria-current="page"{% endif %}>{{ label }}</a>{% endfor %}</nav>
 <main><header class="apphead"><div><p>地服油务 · 交班复核</p><h1>机坪加油回执台</h1></div>
-<form method="get" id="choose-bundle"><label for="bundle">交班来源</label><select name="sample" id="bundle"><option value="dirty" {{ 'selected' if sample=='dirty' }}>夜班三联单</option><option value="clean" {{ 'selected' if sample=='clean' }}>正常交班对照</option></select><button>调阅</button></form></header>
+<form method="get" id="choose-bundle"><label for="bundle">交班来源</label><select name="sample" id="bundle"><option value="dirty" {{ 'selected' if sample=='dirty' }}>夜班三联单</option><option value="clean" {{ 'selected' if sample=='clean' }}>正常交班对照</option><option value="carrier" {{ 'selected' if sample=='carrier' }}>多航司联单</option></select><button>调阅</button></form></header>
 <div class="kpis"><div><span>计量入账</span><b>{{ data.mass.mass_g|kg }} <small>kg</small></b></div><div><span>回执异常票</span><b>{{ data.balance.receipts|rejectattr('state','equalto','MATCH')|list|length }} <small>笔</small></b></div><div><span>缺库存锚点</span><b>{{ data.balance.held_trucks }} <small>辆</small></b></div></div>
 <div class="work-title"><h2>{{ tabs[section] }}</h2><span>规则 {{ rev }}</span></div>
 {% include section ~ '.html' %}

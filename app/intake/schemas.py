@@ -7,6 +7,7 @@ COLUMNS = {
     'receipts':('ticket','truck','signed_kg','document'),
     'stock':('truck','movement','kind','kg'),
 }
+OPTIONAL = {'tickets':('airline',),'receipts':('airline',),'stock':()}
 EMPTY_MARKERS = {'','-','N/A','NULL','未知'}
 DECIMAL_TEXT = re.compile(r'[+-]?[0-9]{1,10}(?:\.[0-9]{1,6})?')
 

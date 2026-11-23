@@ -4,7 +4,7 @@ import io
 from app.diagnostics import RampError
 
 
-def rows_from(raw, required):
+def rows_from(raw, required, optional=()):
     try:
         text = raw.decode('utf-8-sig')
     except UnicodeDecodeError:
@@ -19,7 +19,9 @@ def rows_from(raw, required):
     reader = csv.reader(io.StringIO(text,newline=''),strict=True)
     try:
         header = next(reader)
-        if sorted(header)!=sorted(required):
+        names = set(header)
+        if (len(names)!=len(header) or not set(required)<=names
+                or not names<=set(required)|set(optional)):
             raise RampError('HEADER')
         line = reader.line_num+1
         for row in reader:

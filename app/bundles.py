@@ -4,10 +4,14 @@ from app.diagnostics import RampError
 from app.intake.schemas import COLUMNS
 
 
+SAMPLES = {'clean':'clean','dirty':'dirty','carrier':'carrier'}
+
+
 def sample_set(name):
-    if name not in ('clean','dirty'):
+    if name not in SAMPLES:
         raise RampError('SAMPLE',404)
-    return {key:(SAMPLE_PATH/f'{name}-{key}.csv').read_bytes() for key in COLUMNS}
+    prefix = SAMPLES[name]
+    return {key:(SAMPLE_PATH/f'{prefix}-{key}.csv').read_bytes() for key in COLUMNS}
 
 
 def submitted():
